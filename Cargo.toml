@@ -1,0 +1,11 @@
+[package]
+name = "ameisen_quest_generator"
+version = "0.1.0"
+authors = ["Tom Dymel <tom@dymel.dev>"]
+edition = "2018"
+
+[dependencies]
+chull = "0.2.4"
+mysql = "20.1.0"
+dbscan = "0.2.0"
+plotters = "*"
