@@ -53,7 +53,7 @@ impl QuestHolder {
 
     pub fn export(&self, file: &mut File) {
         if let QuestHolder::Npc { id, position } = &self {
-            let _ = file.write_all(format!("                () => (wowInterface.ObjectManager.GetClosestUnitByNpcId(new List<int> {{ {} }}), new Vector3({:.2}f, {:.2}f, {:.2}f)),\n", id, position.x, position.y, position.z).as_bytes());
+            let _ = file.write_all(format!("                () => (wowInterface.ObjectManager.GetClosestWowUnitByNpcId(new List<int> {{ {} }}), new Vector3({:.2}f, {:.2}f, {:.2}f)),\n", id, position.x, position.y, position.z).as_bytes());
         } else {
             unimplemented!()
         }
