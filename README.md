@@ -8,6 +8,9 @@ I am not actively working on this tool. If you want to extend it feel free to cr
 
 ## Installation
 1. Install cargo and rust stable.
-2. Run the docker container with `TODO`.
-3. Execute in the terminal with `cargo run <quest_id> <cluster expansion radius>`, e. g. `cargo run 788 50.0`.
+2. Build the docker database container with `docker build -t aqg_database .`.
+3. Run the docker container with `docker run -d -p 33306:3306 aqg_database`.
+4. Execute in the terminal with `cargo run <quest_id> <cluster expansion radius>`, e. g. `cargo run 788 50.0`.
 
+## Notes
+I added a static of the [TrinityCore WotLK](https://github.com/TrinityCore/TrinityCore/tree/3.3.5) DB here, so its easy to set up and invariant to changes.
