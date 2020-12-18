@@ -1,9 +1,11 @@
-use crate::value_objects::Position;
-use mysql::Pool;
-use mysql::prelude::{WithParams, BinQuery};
-use dbscan::{cluster, Classification};
 use std::collections::HashMap;
+
 use chull::ConvexHullWrapper;
+use dbscan::{Classification, cluster};
+use mysql::Pool;
+use mysql::prelude::{BinQuery, WithParams};
+
+use crate::value_objects::Position;
 
 #[derive(Debug)]
 pub struct Area(pub Vec<Position>);
@@ -19,7 +21,11 @@ impl Area {
     }
 
     pub fn from_positions(positions: Vec<Position>) -> Vec<Self> {
-        let clustered = cluster(50.0, 3, &positions.iter().map(|pos| vec![pos.x, pos.y]).collect::<Vec<Vec<f64>>>());
+        let args: Vec<String> = std::env::args().collect();
+        let epsilon = args.get(2).expect("Second argument should be a the clustering expansion radius, e.g. 50.0!")
+            .parse::<f64>().expect("Second argument should be a the clustering expansion radius, e.g. 50.0!");
+
+        let clustered = cluster(epsilon, 3, &positions.iter().map(|pos| vec![pos.x, pos.y]).collect::<Vec<Vec<f64>>>());
         let mut max_cluster_id = clustered.iter().map(|classification| match classification {
             Classification::Core(id) | Classification::Edge(id) => *id,
             _ => 0,
@@ -32,7 +38,7 @@ impl Area {
                 Classification::Noise => {
                     max_cluster_id += 1;
                     max_cluster_id
-                },
+                }
             };
 
             let area = cluster.entry(cluster_id).or_insert_with(Vec::new);
