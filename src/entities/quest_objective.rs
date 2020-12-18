@@ -81,20 +81,29 @@ impl QuestObjective {
     }
 
     pub fn export(&self, file: &mut File) {
-        if let QuestObjective::KillAndLoot { npc_ids, areas, loot_item, amount } = &self {
-            let _ = file.write_all(format!("                        new KillAndLootQuestObjective(wowInterface, new List<int> {{ {} }}, {}, {}, new List<List<Vector3>> {{\n",
-                                           npc_ids.iter().map(|val| val.to_string()).collect::<Vec<String>>().join(","), amount, loot_item.unwrap_or(0), ).as_bytes());
-            for area in areas.iter() {
-                let _ = file.write_all(b"                            new()\n");
-                let _ = file.write_all(b"                            {\n");
-                for position in area.0.iter() {
-                    let _ = file.write_all(format!("                                new Vector3({:.2}f, {:.2}f, {:.2}f),\n", position.x, position.y, position.z).as_bytes());
+        match &self {
+            QuestObjective::KillAndLoot { npc_ids, areas, loot_item, amount } => {
+                let _ = file.write_all(format!("                        new KillAndLootQuestObjective(wowInterface, new List<int> {{ {} }}, {}, {}, new List<List<Vector3>> {{\n",
+                                               npc_ids.iter().map(|val| val.to_string()).collect::<Vec<String>>().join(","), amount, loot_item.unwrap_or(0), ).as_bytes());
+                for area in areas.iter() {
+                    let _ = file.write_all(b"                            new()\n");
+                    let _ = file.write_all(b"                            {\n");
+                    for position in area.0.iter() {
+                        let _ = file.write_all(format!("                                new Vector3({:.2}f, {:.2}f, {:.2}f),\n", position.x, position.y, position.z).as_bytes());
+                    }
+                    let _ = file.write_all(b"                            },\n");
                 }
-                let _ = file.write_all(b"                            },\n");
+                let _ = file.write_all(b"                        }),\n");
+            },
+            QuestObjective::CollectFromGameobject { item_id, amount, gameobject_ids, positions } => {
+                let _ = file.write_all(format!("                        new CollectQuestObjective(wowInterface, {}, {}, new List<int> {{ {} }}, new List<Vector3> {{\n",
+                                               item_id, amount, gameobject_ids.iter().map(|val| val.to_string()).collect::<Vec<String>>().join(",")).as_bytes());
+                    for position in positions.iter() {
+                        let _ = file.write_all(format!("                            new Vector3({:.2}f, {:.2}f, {:.2}f),\n", position.x, position.y, position.z).as_bytes());
+                    }
+                let _ = file.write_all(b"                        }),\n");
             }
-            let _ = file.write_all(b"                        }),\n");
-        } else {
-            unimplemented!()
+            _ => unimplemented!()
         }
     }
 }
