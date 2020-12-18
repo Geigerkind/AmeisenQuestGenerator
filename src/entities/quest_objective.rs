@@ -90,7 +90,7 @@ impl QuestObjective {
                 for position in area.0.iter() {
                     let _ = file.write_all(format!("                                new Vector3({:.2}f, {:.2}f, {:.2}f),\n", position.x, position.y, position.z).as_bytes());
                 }
-                let _ = file.write_all(b"                            }\n");
+                let _ = file.write_all(b"                            },\n");
             }
             let _ = file.write_all(b"                        }),\n");
         } else {
