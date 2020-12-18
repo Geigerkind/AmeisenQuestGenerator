@@ -19,7 +19,7 @@ impl Area {
     }
 
     pub fn from_positions(positions: Vec<Position>) -> Vec<Self> {
-        let clustered = cluster(70.0, 3, &positions.iter().map(|pos| vec![pos.x, pos.y]).collect::<Vec<Vec<f64>>>());
+        let clustered = cluster(50.0, 3, &positions.iter().map(|pos| vec![pos.x, pos.y]).collect::<Vec<Vec<f64>>>());
         let mut max_cluster_id = clustered.iter().map(|classification| match classification {
             Classification::Core(id) | Classification::Edge(id) => *id,
             _ => 0,

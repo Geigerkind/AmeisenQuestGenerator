@@ -2,6 +2,9 @@ use mysql::Pool;
 use mysql::prelude::{BinQuery, WithParams};
 
 use crate::entities::{QuestHolder, QuestObjective};
+use std::fs::File;
+use change_case::pascal_case;
+use std::io::Write;
 
 #[derive(Debug)]
 pub struct Quest {
@@ -63,5 +66,57 @@ impl Quest {
         } else {
             panic!("No quest found with this ID!");
         }
+    }
+
+    pub fn export(&self) {
+        let quest_name = format!("Q{}", pascal_case(&self.name.replace("'s", "").replace(" ", "_")));
+        let mut file = File::create(&format!("export/{}.cs", quest_name)).unwrap();
+        let _ = file.write_all(b"using AmeisenBotX.Core.Movement.Pathfinding.Objects;\n");
+        let _ = file.write_all(b"using AmeisenBotX.Core.Quest.Objects.Objectives;\n");
+        let _ = file.write_all(b"using AmeisenBotX.Core.Quest.Objects.Quests;\n");
+        let _ = file.write_all(b"using System.Collections.Generic;\n");
+        let _ = file.write_all(b"\n");
+        let _ = file.write_all(b"namespace AmeisenBotX.Core.Quest.Quests.TODO\n");
+        let _ = file.write_all(b"{\n");
+        let _ = file.write_all(format!("    class {} : BotQuest\n", quest_name).as_bytes());
+        let _ = file.write_all(b"    {\n");
+        let _ = file.write_all(format!("        public {}(WowInterface wowInterface)\n", quest_name).as_bytes());
+        let _ = file.write_all(format!("            : base(wowInterface, {}, \"{}\", {}, 1,\n", self.id, self.name, self.min_level).as_bytes());
+        if let QuestHolder::Npc { id, position } = &self.start {
+            let _ = file.write_all(format!("                () => (wowInterface.ObjectManager.GetClosestUnitByNpcId(new List<int> {{ {} }}), new Vector3({:.2}f, {:.2}f, {:.2}f)),\n", id, position.x, position.y, position.z).as_bytes());
+        } else {
+            unimplemented!()
+        }
+        if let QuestHolder::Npc { id, position } = &self.end {
+            let _ = file.write_all(format!("                () => (wowInterface.ObjectManager.GetClosestUnitByNpcId(new List<int> {{ {} }}), new Vector3({:.2}f, {:.2}f, {:.2}f)),\n", id, position.x, position.y, position.z).as_bytes());
+        } else {
+            unimplemented!()
+        }
+        let _ = file.write_all(b"                new List<IQuestObjective>()\n");
+        let _ = file.write_all(b"                {\n");
+        let _ = file.write_all(b"                    new QuestObjectiveChain(new List<IQuestObjective>()\n");
+        let _ = file.write_all(b"                    {\n");
+        for objective in self.objectives.iter() {
+            if let QuestObjective::KillAndLoot { npc_ids, areas, loot_item, amount } = objective {
+                let _ = file.write_all(format!("                        new KillAndLootQuestObjective(wowInterface, new List<int> {{ {} }}, {}, {}, new List<List<Vector3>> {{\n",
+                                               npc_ids.iter().map(|val| val.to_string()).collect::<Vec<String>>().join(","), amount, loot_item.unwrap_or(0), ).as_bytes());
+                for area in areas.iter() {
+                    let _ = file.write_all(b"                            new()\n");
+                    let _ = file.write_all(b"                            {\n");
+                    for position in area.0.iter() {
+                        let _ = file.write_all(format!("                                new Vector3({:.2}f, {:.2}f, {:.2}f),\n", position.x, position.y, position.z).as_bytes());
+                    }
+                    let _ = file.write_all(b"                            }\n");
+                }
+                let _ = file.write_all(b"                        }),\n");
+            } else {
+                unimplemented!()
+            }
+        }
+        let _ = file.write_all(b"                    })\n");
+        let _ = file.write_all(b"                })\n");
+        let _ = file.write_all(b"        {}\n");
+        let _ = file.write_all(b"    }\n");
+        let _ = file.write_all(b"}\n");
     }
 }
