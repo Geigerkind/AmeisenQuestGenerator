@@ -2,6 +2,8 @@ use mysql::Pool;
 use mysql::prelude::{BinQuery, WithParams};
 
 use crate::value_objects::Position;
+use std::fs::File;
+use std::io::Write;
 
 #[derive(Debug)]
 pub enum QuestHolder {
@@ -47,5 +49,13 @@ impl QuestHolder {
             };
         }
         unreachable!()
+    }
+
+    pub fn export(&self, file: &mut File) {
+        if let QuestHolder::Npc { id, position } = &self {
+            let _ = file.write_all(format!("                () => (wowInterface.ObjectManager.GetClosestUnitByNpcId(new List<int> {{ {} }}), new Vector3({:.2}f, {:.2}f, {:.2}f)),\n", id, position.x, position.y, position.z).as_bytes());
+        } else {
+            unimplemented!()
+        }
     }
 }
