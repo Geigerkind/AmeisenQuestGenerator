@@ -84,15 +84,19 @@ impl Quest {
         let _ = file.write_all(format!("            : base(wowInterface, {}, \"{}\", {}, 1,\n", self.id, self.name, self.min_level).as_bytes());
         self.start.export(&mut file);
         self.end.export(&mut file);
-        let _ = file.write_all(b"                new List<IQuestObjective>()\n");
-        let _ = file.write_all(b"                {\n");
-        let _ = file.write_all(b"                    new QuestObjectiveChain(new List<IQuestObjective>()\n");
-        let _ = file.write_all(b"                    {\n");
-        for objective in self.objectives.iter() {
-            objective.export(&mut file);
+        if self.objectives.is_empty() {
+            let _ = file.write_all(b"                null)\n");
+        } else {
+            let _ = file.write_all(b"                new List<IQuestObjective>()\n");
+            let _ = file.write_all(b"                {\n");
+            let _ = file.write_all(b"                    new QuestObjectiveChain(new List<IQuestObjective>()\n");
+            let _ = file.write_all(b"                    {\n");
+            for objective in self.objectives.iter() {
+                objective.export(&mut file);
+            }
+            let _ = file.write_all(b"                    })\n");
+            let _ = file.write_all(b"                })\n");
         }
-        let _ = file.write_all(b"                    })\n");
-        let _ = file.write_all(b"                })\n");
         let _ = file.write_all(b"        {}\n");
         let _ = file.write_all(b"    }\n");
         let _ = file.write_all(b"}\n");
