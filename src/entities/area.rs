@@ -53,11 +53,23 @@ impl Area {
                 }
             } else {
                 let hull = ConvexHullWrapper::try_new(&cluster.iter().map(|pos| vec![pos.x, pos.y]).collect::<Vec<Vec<f64>>>(), None).expect("This must be able to form a hull");
-                let (v, _) = hull.vertices_indices();
-                areas.push(Area(cluster.into_iter().filter(|pos| v.iter().find(|ipos| ipos[0] == pos.x && ipos[1] == pos.y).is_some()).collect()));
+                let (v, mut indices) = hull.vertices_indices();
+                let unordered_path: Vec<Position> = cluster.into_iter().filter(|pos| v.iter().find(|ipos| ipos[0] == pos.x && ipos[1] == pos.y).is_some()).collect();
+                let mut ordered_path = vec![unordered_path[indices[0]].clone(), unordered_path[indices[1]].clone()];
+                let first_vertex = indices.remove(0);
+                let mut last_vertex = indices.remove(0);
+                while !indices.is_empty() {
+                    let start_vertex = indices.iter().position(|idx| *idx == last_vertex).unwrap();
+                    indices.remove(start_vertex);
+                    last_vertex = indices.remove(start_vertex);
+                    if last_vertex != first_vertex {
+                        ordered_path.push(unordered_path[last_vertex].clone());
+                    }
+                }
+                areas.push(Area(ordered_path));
             }
         }
-        areas // TODO: Order area's positions?
+        areas
     }
 
     pub fn trim_overlapping(areas: Vec<Area>) -> Vec<Self> {
