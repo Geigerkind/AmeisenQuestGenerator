@@ -74,10 +74,9 @@ impl QuestObjective {
                     gameobject_ids: loot_gameobject_ids,
                     positions
                 });
-            } else {
-                unreachable!()
             }
         }
+        None
     }
 
     pub fn export(&self, file: &mut File) {
