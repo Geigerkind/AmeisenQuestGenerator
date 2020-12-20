@@ -49,9 +49,6 @@ impl Quest {
                 }
                 if let Some(collect_objective) = QuestObjective::try_new_collect_objective(pool, quest_id, index + 1, item_id) {
                     objectives.push(collect_objective);
-                } else {
-                    unimplemented!()
-                    // Hmm?
                 }
             }
 
