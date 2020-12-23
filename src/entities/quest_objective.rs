@@ -20,6 +20,10 @@ pub enum QuestObjective {
         positions: Vec<Position>,
     },
     TalkObjective,
+    GrindObjective {
+        max_level: u8,
+        areas: Vec<Area>
+    }
 }
 
 impl QuestObjective {
@@ -79,6 +83,13 @@ impl QuestObjective {
         None
     }
 
+    pub fn new_grind_objective(pool: &Pool, npc_ids: Vec<u32>, max_level: u8) -> Self {
+        QuestObjective::GrindObjective {
+            max_level,
+            areas: Area::new(pool, &npc_ids),
+        }
+    }
+
     pub fn export(&self, file: &mut File) {
         match &self {
             QuestObjective::KillAndLoot { npc_ids, areas, loot_item, amount } => {
@@ -100,6 +111,18 @@ impl QuestObjective {
                     for position in positions.iter() {
                         let _ = file.write_all(format!("                            new Vector3({:.2}f, {:.2}f, {:.2}f),\n", position.x, position.y, position.z).as_bytes());
                     }
+                let _ = file.write_all(b"                        }),\n");
+            }
+            QuestObjective::GrindObjective { max_level, areas } => {
+                let _ = file.write_all(format!("                        new GrindingObjective(wowInterface, {}, new List<List<Vector3>> {{\n", max_level).as_bytes());
+                for area in areas.iter() {
+                    let _ = file.write_all(b"                            new()\n");
+                    let _ = file.write_all(b"                            {\n");
+                    for position in area.0.iter() {
+                        let _ = file.write_all(format!("                                new Vector3({:.2}f, {:.2}f, {:.2}f),\n", position.x, position.y, position.z).as_bytes());
+                    }
+                    let _ = file.write_all(b"                            },\n");
+                }
                 let _ = file.write_all(b"                        }),\n");
             }
             _ => unimplemented!()

@@ -18,6 +18,7 @@ pub enum QuestHolder {
     Item {
         id: u32
     },
+    None
 }
 
 impl QuestHolder {
